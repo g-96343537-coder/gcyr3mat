@@ -3,72 +3,127 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>三年级数学练习</title>
-<!-- MathJax CDN -->
-<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
+<title>三年级数学选择题测验</title>
 <style>
 body {
-  font-family: "Comic Neue", sans-serif;
-  font-size: 14px;
-  background: url('https://d1csarkz8obe9u.cloudfront.net/posterpreviews/powerpoint-math-for-kids-background-design-template-9c7101e6f62f51589b70148f650f4f6e_screen.jpg?ts=1737411341') no-repeat center center fixed;
+  font-family: "ZCOOL KuaiLe', 'Microsoft YaHei', sans-serif;
+  font-size: 18px; 
+  background: url('https://www.freevector.com/uploads/vector/preview/31147/Freevector_Colorful-Abstract-Background_mf0221.jpg') no-repeat center center fixed;
   background-size: cover;
   padding: 20px;
   color: #000;
+  overflow-x: hidden;
 }
+
+/* 主标题 */
 h1 {
-  font-size: 2rem;
+  font-size: 2.4rem;
   text-align: center;
   margin-bottom: 20px;
 }
+
+/* 页码 */
 #q-index {
-  font-size: 1.2rem;
-  margin-bottom: 12px;
-}
-#question {
   font-size: 1.6rem;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
+
+/* 浮现层：覆盖题目和选项 */
+#quiz-container {
+  background: rgba(255,255,255,0.85);
+  padding: 24px 28px;
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35), 0 0 20px rgba(255,255,255,0.2) inset;
+  backdrop-filter: blur(6px);
+  max-width: 900px;
+  margin: auto;
+  opacity: 80;
+  animation: fadeIn 0.8s forwards, floatUpDown 3s ease-in-out infinite alternate;
+}
+
+/* 渐显动画 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 轻微漂浮动画 */
+@keyframes floatUpDown {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-6px); }
+}
+
+/* 题目 */
+#question {
+  font-size: 2rem;
+  margin-bottom: 25px;
+}
+
+/* 选项浮现框 */
 .opt {
-  font-size: 1.5rem;
-  padding: 12px 18px;
-  margin-bottom: 14px;
-  border-radius: 12px;
-  border: 2px solid #d0d0d0;
-  background: rgba(255,255,255,0.9);
+  font-size: 2.1rem;
+  padding: 16px 22px;
+  margin-bottom: 18px;
+  border-radius: 16px;
+  border: 3px solid #d0d0d0;
+  background: rgba(255,255,255,0.95);
   cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.opt:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
 }
 .opt.correct { background: rgba(90, 220, 100,0.9); border-color: #56d56c; }
 .opt.wrong { background: rgba(255, 200, 200,0.9); border-color: #ff7b7b; }
-#nextBtn {
-  font-size: 1.4rem;
-  padding: 12px 24px;
+
+/* 按钮样式 */
+#nextBtn, #finishBtn {
+  font-size: 1.8rem;
+  padding: 14px 28px;
   background: #7dbbff;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
-  margin-top: 18px;
+  margin-top: 20px;
 }
+#finishBtn { display:none; }
 #restart {
-  font-size: 1.1rem;
-  padding: 6px 14px;
-  margin-left: 10px;
-}
-.score {
   font-size: 1.3rem;
-  margin-top: 12px;
+  padding: 8px 18px;
+  margin-left: 12px;
+}
+
+/* 分数和结果 */
+.score {
+  font-size: 1.6rem;
+  margin-top: 15px;
+}
+#result {
+  margin-top: 25px;
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+  color: #1a1a1a;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
 }
 </style>
 </head>
 <body>
-<h1>三年级数学练习</h1>
-<div id="q-index">第 <span id="cur">1</span> / <span id="total">0</span> 题</div>
-<div id="question"></div>
-<div id="options"></div>
-<div class="controls">
-  <div class="score" id="score">得分：0</div>
-  <button id="nextBtn" disabled>下一题</button>
-  <button id="restart">重做</button>
+<h1>三年级数学选择题测验</h1>
+
+<div id="quiz-container">
+  <div id="q-index">第 <span id="cur">1</span> / <span id="total">0</span> 题</div>
+  <div id="question"></div>
+  <div id="options"></div>
+  <div class="controls">
+    <div class="score" id="score">得分：0</div>
+    <button id="nextBtn" disabled>下一题</button>
+    <button id="finishBtn">完成测验</button>
+    <button id="restart">重做</button>
+  </div>
+  <div id="result"></div>
 </div>
 
 <script>
@@ -77,7 +132,7 @@ const rawData = `
 1,这里的数目是 “四千零五”。请问数字写法是： A. 405 B. 4005 C. 4050 D. 4500,B
 2,在数目 3 582 中，数字 5 的数位 (Place Value) 是什么？ A. 个位 B. 十位 C. 百位 D. 千位,C
 3,哪个数目的百位近似值是 2 000？ A. 1 920 B. 1 955 C. 2 055 D. 2 100,C
-4,2 145 + 3 620 = A. 5 765 B. 5 785 C. 5 865 D. 6 765,A
+4,2 145 + 3 620 = A. 5 765 B. 5 785 C. 5 865 D. 6 765,C
 5,8 000 - 3 456 = A. 4 544 B. 4 644 C. 5 456 D. 5 544,A
 6,245 x 4 = A. 860 B. 880 C. 960 D. 980,C
 7,72 / 8 = A. 7 B. 8 C. 9 D. 10,C
@@ -112,12 +167,15 @@ const data = rawData.trim().split("\n").map(line=>{
   const answer = parts.pop().trim().toUpperCase();
   const qid = parts.shift();
   const full = parts.join(",").trim();
+
   const optStart = full.indexOf("A.");
   const qtext = full.slice(0, optStart).trim();
   const optRaw = full.slice(optStart);
+
   const optParts = optRaw.split(/\s(?=[A-D]\.\s)/).map(s=>s.trim());
   const opts = optParts.map(op => op.replace(/^[A-D]\.\s*/, ""));
   while (opts.length < 4) opts.push("(缺失)");
+
   return { q: qtext, options: opts, answer: {A:0,B:1,C:2,D:3}[answer] };
 });
 
@@ -128,19 +186,21 @@ document.getElementById('total').textContent = data.length;
 function loadQuestion(){
   answered=false;
   document.getElementById('nextBtn').disabled = true;
+  document.getElementById('finishBtn').style.display = 'none';
+  document.getElementById('result').textContent = '';
   const q = data[current];
-  document.getElementById('question').innerHTML = q.q;
+  document.getElementById('question').textContent = q.q;
   document.getElementById('cur').textContent = current+1;
+
   const optsDiv = document.getElementById('options');
   optsDiv.innerHTML = '';
   q.options.forEach((opt,i)=>{
     const div = document.createElement('div');
     div.className='opt';
-    div.innerHTML = opt;
+    div.textContent = opt;
     div.addEventListener('click',()=>selectOption(div,i));
     optsDiv.appendChild(div);
   });
-  MathJax.typesetPromise();
 }
 
 function selectOption(el,index){
@@ -149,24 +209,35 @@ function selectOption(el,index){
   const q = data[current];
   const all = document.querySelectorAll('.opt');
   all.forEach((d,i)=>{ if(i===q.answer) d.classList.add('correct'); });
-  if(index!==q.answer) el.classList.add('wrong'); else score++;
+  if(index!==q.answer) el.classList.add('wrong');
+  else score++;
   document.getElementById('score').textContent='得分：'+score;
-  document.getElementById('nextBtn').disabled=false;
+
+  if(current === data.length-1){
+    document.getElementById('finishBtn').style.display='inline-block';
+    document.getElementById('nextBtn').style.display='none';
+  } else {
+    document.getElementById('nextBtn').disabled=false;
+  }
 }
 
 document.getElementById('nextBtn').addEventListener('click',()=>{
   current++;
-  if(current>=data.length){
-    alert('测验结束！ 总得分：' + score);
-    return;
-  }
   loadQuestion();
 });
+
+document.getElementById('finishBtn').addEventListener('click',()=>{
+  document.getElementById('result').textContent = `🎉 太棒啦！你完成了测验，总得分：${score} / ${data.length} 💪 继续努力，让自己更棒！🌟`;
+  document.getElementById('finishBtn').style.display='none';
+});
+
 document.getElementById('restart').addEventListener('click',()=>{
   if(confirm('确定重做测验吗？')){
     current=0;
     score=0;
     document.getElementById('score').textContent='得分：0';
+    document.getElementById('nextBtn').style.display='inline-block';
+    document.getElementById('nextBtn').disabled=true;
     loadQuestion();
   }
 });
@@ -175,4 +246,3 @@ loadQuestion();
 </script>
 </body>
 </html>
-
