@@ -6,7 +6,7 @@
 <title>三年级数学选择题测验</title>
 <style>
 body {
-  font-family: "ZCOOL KuaiLe', 'Microsoft YaHei', sans-serif;
+  font-family: "ZCOOL KuaiLe', 'Microsoft YaHei', sans-serif";
   font-size: 18px; 
   background: url('https://www.freevector.com/uploads/vector/preview/31147/Freevector_Colorful-Abstract-Background_mf0221.jpg') no-repeat center center fixed;
   background-size: cover;
@@ -15,20 +15,17 @@ body {
   overflow-x: hidden;
 }
 
-/* 主标题 */
 h1 {
   font-size: 2.4rem;
   text-align: center;
   margin-bottom: 20px;
 }
 
-/* 页码 */
 #q-index {
   font-size: 1.6rem;
   margin-bottom: 15px;
 }
 
-/* 浮现层：覆盖题目和选项 */
 #quiz-container {
   background: rgba(255,255,255,0.85);
   padding: 24px 28px;
@@ -41,25 +38,21 @@ h1 {
   animation: fadeIn 0.8s forwards, floatUpDown 3s ease-in-out infinite alternate;
 }
 
-/* 渐显动画 */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* 轻微漂浮动画 */
 @keyframes floatUpDown {
   0% { transform: translateY(0px); }
   100% { transform: translateY(-6px); }
 }
 
-/* 题目 */
 #question {
   font-size: 2rem;
   margin-bottom: 25px;
 }
 
-/* 选项浮现框 */
 .opt {
   font-size: 2.1rem;
   padding: 16px 22px;
@@ -78,8 +71,7 @@ h1 {
 .opt.correct { background: rgba(90, 220, 100,0.9); border-color: #56d56c; }
 .opt.wrong { background: rgba(255, 200, 200,0.9); border-color: #ff7b7b; }
 
-/* 按钮样式 */
-#nextBtn, #finishBtn {
+button {
   font-size: 1.8rem;
   padding: 14px 28px;
   background: #7dbbff;
@@ -87,6 +79,11 @@ h1 {
   border-radius: 14px;
   cursor: pointer;
   margin-top: 20px;
+  transition: background 0.3s;
+}
+button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
 }
 #finishBtn { display:none; }
 #restart {
@@ -95,7 +92,6 @@ h1 {
   margin-left: 12px;
 }
 
-/* 分数和结果 */
 .score {
   font-size: 1.6rem;
   margin-top: 15px;
@@ -108,25 +104,72 @@ h1 {
   color: #1a1a1a;
   text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
 }
+#upload-status {
+    font-size: 1.2rem;
+    color: #444;
+    text-align: center;
+    margin-top: 15px;
+    min-height: 30px;
+}
+
+#student-info {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+#student-info input, #student-info select {
+  font-size: 1.8rem;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 2px solid #d0d0d0;
+}
+#student-info button {
+  width: 180px;
+  align-self: center;
+}
 </style>
 </head>
 <body>
 <h1>三年级数学选择题测验</h1>
 
 <div id="quiz-container">
-  <div id="q-index">第 <span id="cur">1</span> / <span id="total">0</span> 题</div>
-  <div id="question"></div>
-  <div id="options"></div>
-  <div class="controls">
-    <div class="score" id="score">得分：0</div>
-    <button id="nextBtn" disabled>下一题</button>
-    <button id="finishBtn">完成测验</button>
-    <button id="restart">重做</button>
+  <div id="student-info">
+    <label>姓名：
+      <input type="text" id="studentName" placeholder="请输入你的名字">
+    </label>
+    <label>班级：
+      <select id="studentClass">
+        <option value="">请选择班级</option>
+        <option value="3M">3M</option>
+        <option value="3K">3K</option>
+        <option value="3B">3B</option>
+        <option value="3H">3H</option>
+        <option value="3J">3J</option>
+      </select>
+    </label>
+    <button id="startQuiz">开始测验</button>
   </div>
-  <div id="result"></div>
+
+  <div id="quiz-content" style="display:none;">
+    <div id="q-index">第 <span id="cur">1</span> / <span id="total">0</span> 题</div>
+    <div id="question"></div>
+    <div id="options"></div>
+    <div class="controls">
+      <div class="score" id="score">得分：0</div>
+      <button id="nextBtn" disabled>下一题</button>
+      <button id="finishBtn">完成测验</button>
+      <button id="restart">重做</button>
+    </div>
+    <div id="result"></div>
+    <div id="upload-status"></div>
+  </div>
 </div>
 
 <script>
+// ====== Google Apps Script URL ======
+// 请确保此链接已部署为 Web App，且权限设置为 "Anyone" (任何人)
+const scriptURL = "https://script.google.com/macros/s/AKfycbzuA7A_loQmM8AfheooizJWB3E18ot4Yvcqc_yNUfk-YtFH4l7xGHa8RfgpjuCB9v1L-Q/exec";
+
 // ====== 题库 ======
 const rawData = `
 1,这里的数目是 “四千零五”。请问数字写法是： A. 405 B. 4005 C. 4050 D. 4500,B
@@ -167,19 +210,16 @@ const data = rawData.trim().split("\n").map(line=>{
   const answer = parts.pop().trim().toUpperCase();
   const qid = parts.shift();
   const full = parts.join(",").trim();
-
   const optStart = full.indexOf("A.");
   const qtext = full.slice(0, optStart).trim();
   const optRaw = full.slice(optStart);
-
   const optParts = optRaw.split(/\s(?=[A-D]\.\s)/).map(s=>s.trim());
   const opts = optParts.map(op => op.replace(/^[A-D]\.\s*/, ""));
   while (opts.length < 4) opts.push("(缺失)");
-
   return { q: qtext, options: opts, answer: {A:0,B:1,C:2,D:3}[answer] };
 });
 
-// ====== 显示题目 ======
+// ====== 测验逻辑 ======
 let current=0, score=0, answered=false;
 document.getElementById('total').textContent = data.length;
 
@@ -188,6 +228,7 @@ function loadQuestion(){
   document.getElementById('nextBtn').disabled = true;
   document.getElementById('finishBtn').style.display = 'none';
   document.getElementById('result').textContent = '';
+  document.getElementById('upload-status').textContent = '';
   const q = data[current];
   document.getElementById('question').textContent = q.q;
   document.getElementById('cur').textContent = current+1;
@@ -221,28 +262,89 @@ function selectOption(el,index){
   }
 }
 
+// 下一题
 document.getElementById('nextBtn').addEventListener('click',()=>{
   current++;
   loadQuestion();
 });
 
-document.getElementById('finishBtn').addEventListener('click',()=>{
-  document.getElementById('result').textContent = `🎉 太棒啦！你完成了测验，总得分：${score} / ${data.length} 💪 继续努力，让自己更棒！🌟`;
-  document.getElementById('finishBtn').style.display='none';
+// ====== 关键修改：no-cors 模式 ======
+document.getElementById('finishBtn').addEventListener('click', () => {
+  const finishBtn = document.getElementById('finishBtn');
+  const resultDiv = document.getElementById('result');
+  const statusDiv = document.getElementById('upload-status');
+  
+  // 1. 界面反馈
+  finishBtn.disabled = true;
+  finishBtn.textContent = '正在保存成绩...';
+  
+  // 2. 准备数据 (使用 URLSearchParams)
+  const formData = new URLSearchParams();
+  formData.append('name', studentName);
+  formData.append('class', studentClass);
+  formData.append('score', score);
+  formData.append('total', data.length);
+  
+  // 3. 发送 (开启 no-cors 模式)
+  fetch(scriptURL, {
+    method: 'POST',
+    // ⚠️ 重点：no-cors 模式。告诉浏览器忽略跨域检查。
+    // 副作用：我们无法读取服务器的返回内容（opaque response）。
+    // 但只要请求发出去了，Google Script 就会执行。
+    mode: 'no-cors', 
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: formData
+  })
+  .then(() => {
+    // 因为是 no-cors，我们假设没有网络报错就是成功了
+    // 虽然看不到服务器返回的 "success" 字样，但数据应该已经到了
+    console.log('Request sent (no-cors mode)');
+    resultDiv.textContent = `🎉 太棒啦，${studentName}! 总得分：${score} / ${data.length}`;
+    statusDiv.textContent = "✅ 成绩已发送给老师！";
+    finishBtn.style.display = 'none'; 
+  })
+  .catch((error) => {
+    // 只有断网或地址严重错误才会进这里
+    console.error('Fetch error:', error);
+    resultDiv.textContent = `🎉 完成！${studentName}, 总得分：${score} / ${data.length}`;
+    statusDiv.innerHTML = `<span style="color:red">⚠️ 成绩上传失败。<br>原因: ${error.message}</span>`;
+    finishBtn.textContent = '重试上传';
+    finishBtn.disabled = false;
+  });
 });
 
+// 重做
 document.getElementById('restart').addEventListener('click',()=>{
-  if(confirm('确定重做测验吗？')){
+  if(confirm('确定重做测验吗？成绩将重新计算。')){
     current=0;
     score=0;
     document.getElementById('score').textContent='得分：0';
     document.getElementById('nextBtn').style.display='inline-block';
     document.getElementById('nextBtn').disabled=true;
+    document.getElementById('upload-status').textContent = ''; 
     loadQuestion();
   }
 });
 
-loadQuestion();
+// ====== 学生信息页逻辑 ======
+let studentName = '';
+let studentClass = '';
+document.getElementById('startQuiz').addEventListener('click',()=>{
+  const nameInput = document.getElementById('studentName').value.trim();
+  const classSelect = document.getElementById('studentClass').value;
+  if(!nameInput || !classSelect){
+    alert('请填写姓名并选择班级！');
+    return;
+  }
+  studentName = nameInput;
+  studentClass = classSelect;
+
+  document.getElementById('student-info').style.display='none';
+  document.getElementById('quiz-content').style.display='block';
+  loadQuestion();
+});
 </script>
 </body>
 </html>
